@@ -1,0 +1,3 @@
+User: tell me who is the dean of the nco
+Bot: This query will be handled by the UniAssist knowledge base.
+

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UniAssist Voice</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+    background: #050a14;
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    color: #e8eaf0;
+}
+
+.card {
+    background: linear-gradient(135deg, #0a1628, #060e1c);
+    border: 1px solid rgba(197,165,114,0.2);
+    border-radius: 24px;
+    padding: 36px 32px;
+    width: 340px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    position: relative;
+    overflow: hidden;
+}
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, #C5A572, transparent);
+}
+
+.title {
+    font-family: 'Cinzel', serif;
+    font-size: 13px;
+    color: #C5A572;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.subtitle {
+    font-size: 12px;
+    color: #4a6080;
+    margin-bottom: 28px;
+}
+
+/* ORB */
+.orb {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #1a2d4a, #040b18);
+    border: 2px solid #7a6544;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    cursor: pointer;
+    margin: 0 auto 20px;
+    transition: all 0.3s;
+    box-shadow: 0 0 24px rgba(197,165,114,0.2);
+    user-select: none;
+}
+.orb:hover { transform: scale(1.06); }
+.orb.listening {
+    border-color: #ff4d6d;
+    box-shadow: 0 0 40px rgba(255,77,109,0.5);
+    animation: pulse 1.2s infinite;
+}
+.orb.speaking {
+    border-color: #C5A572;
+    box-shadow: 0 0 40px rgba(197,165,114,0.5);
+}
+@keyframes pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+/* WAVES */
+.waves {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 32px;
+    margin: 0 0 14px 0;
+}
+.wb {
+    width: 4px;
+    border-radius: 4px;
+    background: #C5A572;
+    opacity: 0.15;
+    transition: opacity 0.3s;
+}
+.wb.on { opacity: 1; animation: wv 0.7s ease-in-out infinite alternate; }
+.wb:nth-child(1){height:8px;animation-delay:0s;}
+.wb:nth-child(2){height:16px;animation-delay:.1s;}
+.wb:nth-child(3){height:26px;animation-delay:.2s;}
+.wb:nth-child(4){height:18px;animation-delay:.15s;}
+.wb:nth-child(5){height:12px;animation-delay:.05s;}
+.wb:nth-child(6){height:22px;animation-delay:.25s;}
+.wb:nth-child(7){height:9px;animation-delay:.1s;}
+@keyframes wv { from{transform:scaleY(0.3);} to{transform:scaleY(1);} }
+
+#status {
+    font-size: 13px;
+    color: #8a9ab8;
+    margin-bottom: 10px;
+    min-height: 20px;
+}
+
+#transcript {
+    background: #040b18;
+    border: 1px solid rgba(197,165,114,0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: #8a9ab8;
+    min-height: 40px;
+    margin-bottom: 16px;
+    font-style: italic;
+    text-align: left;
+    word-break: break-word;
+    line-height: 1.5;
+}
+
+.btns {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+.btn {
+    background: #0d1a2e;
+    border: 1px solid rgba(197,165,114,0.2);
+    border-radius: 8px;
+    padding: 9px 16px;
+    color: #C5A572;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.btn:hover { background: #152238; border-color: #C5A572; }
+.btn.active { background: #152238; border-color: #C5A572; color: #e0c898; }
+
+#url-input {
+    width: 100%;
+    background: #040b18;
+    border: 1px solid rgba(197,165,114,0.15);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #8a9ab8;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    margin-bottom: 6px;
+    outline: none;
+}
+#url-input:focus { border-color: rgba(197,165,114,0.4); }
+
+#err {
+    font-size: 11.5px;
+    color: #ff6b6b;
+    min-height: 16px;
+    margin-top: 4px;
+}
+#success {
+    font-size: 11.5px;
+    color: #00c896;
+    min-height: 16px;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid rgba(197,165,114,0.1);
+    margin: 14px 0;
+}
+
+.hint {
+    font-size: 11px;
+    color: #2a3d52;
+    line-height: 1.6;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <div class="title">UniAssist NCU</div>
+    <div class="subtitle">Voice Assistant</div>
+
+    <div class="orb" id="orb" onclick="startListen()">🎙️</div>
+
+    <div class="waves">
+        <div class="wb" id="w1"></div>
+        <div class="wb" id="w2"></div>
+        <div class="wb" id="w3"></div>
+        <div class="wb" id="w4"></div>
+        <div class="wb" id="w5"></div>
+        <div class="wb" id="w6"></div>
+        <div class="wb" id="w7"></div>
+    </div>
+
+    <div id="status">Click the orb or press Speak</div>
+    <div id="transcript">Your speech will appear here...</div>
+
+    <div class="btns">
+        <button class="btn" onclick="startListen()">🎤 Speak</button>
+        <button class="btn" onclick="stopAll()">⏹ Stop</button>
+        <button class="btn" id="autobtn" onclick="toggleAuto(this)">🔕 Auto</button>
+    </div>
+
+    <hr class="divider">
+
+    <div style="font-size:11px;color:#4a6080;margin-bottom:6px;">Streamlit App URL (default below)</div>
+    <input id="url-input" type="text" value="http://localhost:8501" placeholder="http://localhost:8501" />
+
+    <div id="err"></div>
+    <div id="success"></div>
+
+    <hr class="divider">
+    <div class="hint">
+        1. Open this file in <strong style="color:#C5A572;">Chrome/Edge</strong><br>
+        2. Allow microphone when asked<br>
+        3. Click orb → speak → auto submits to app
+    </div>
+</div>
+
+<script>
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var rec = null;
+var synth = window.speechSynthesis;
+var listening = false;
+var autoSpeak = false;
+
+if (!SR) {
+    document.getElementById('err').textContent = '❌ Please open this in Chrome or Edge browser';
+    document.getElementById('orb').style.opacity = '0.4';
+}
+
+function getAppURL() {
+    return document.getElementById('url-input').value.trim() || 'http://localhost:8501';
+}
+
+function setupRec() {
+    if (!SR) return null;
+    var r = new SR();
+    r.continuous = false;
+    r.interimResults = true;
+    r.lang = 'en-IN';
+
+    r.onstart = function() {
+        listening = true;
+        setOrb('listening');
+        setS('🔴 Listening... speak your question');
+        waves(true);
+        document.getElementById('err').textContent = '';
+        document.getElementById('success').textContent = '';
+    };
+
+    r.onresult = function(e) {
+        var fi = '', intr = '';
+        for (var i = e.resultIndex; i < e.results.length; i++) {
+            var t = e.results[i][0].transcript;
+            if (e.results[i].isFinal) fi += t;
+            else intr += t;
+        }
+        document.getElementById('transcript').textContent = fi || intr;
+        if (fi) window._trans = fi;
+    };
+
+    r.onend = function() {
+        listening = false;
+        waves(false);
+        if (window._trans) {
+            setS('✅ Got it! Sending to UniAssist...');
+            sendQuery(window._trans);
+            window._trans = null;
+        } else {
+            setOrb('idle');
+            setS('Click the orb or press Speak');
+        }
+    };
+
+    r.onerror = function(e) {
+        listening = false;
+        waves(false);
+        setOrb('idle');
+        var msgs = {
+            'not-allowed': '🚫 Mic blocked — click 🔒 in address bar → Allow mic',
+            'no-speech':   '🔇 Nothing heard — try again',
+            'network':     '🌐 Network error — check connection',
+            'audio-capture': '🎙️ No microphone found'
+        };
+        document.getElementById('err').textContent = msgs[e.error] || '⚠️ Error: ' + e.error;
+        setS('Click the orb or press Speak');
+    };
+
+    return r;
+}
+
+function sendQuery(text) {
+    // Send to Streamlit via URL param — opens/refreshes the app tab
+    var base = getAppURL();
+    var url = base + '?vq=' + encodeURIComponent(text);
+    document.getElementById('success').textContent = '🚀 Opening app with your question...';
+    setS('Opening UniAssist...');
+
+    // Try to find existing Streamlit tab and update it
+    if (window._appTab && !window._appTab.closed) {
+        window._appTab.location.href = url;
+        window._appTab.focus();
+    } else {
+        window._appTab = window.open(url, 'uniassist_app');
+    }
+
+    setTimeout(function() {
+        setOrb('idle');
+        setS('Click the orb or press Speak');
+        document.getElementById('success').textContent = '✅ Question sent!';
+    }, 2000);
+}
+
+function speakText(text) {
+    if (!synth) return;
+    synth.cancel();
+    setOrb('speaking'); setS('🔊 Speaking...'); waves(true);
+
+    var clean = text
+        .replace(/\*\*(.*?)\*\*/g, '$1')
+        .replace(/\*(.*?)\*/g, '$1')
+        .replace(/#{1,6} /g, '')
+        .replace(/\n+/g, '. ')
+        .replace(/[•\-]/g, '')
+        .replace(/\s+/g, ' ').trim();
+
+    var chunks = [], sents = clean.match(/[^.!?]+[.!?]*/g) || [clean], ch = '';
+    sents.forEach(function(s) {
+        if ((ch + s).length < 200) ch += s;
+        else { if (ch) chunks.push(ch.trim()); ch = s; }
+    });
+    if (ch) chunks.push(ch.trim());
+
+    var idx = 0;
+    function next() {
+        if (idx >= chunks.length) {
+            waves(false); setOrb('idle');
+            setS('Click the orb or press Speak'); return;
+        }
+        var u = new SpeechSynthesisUtterance(chunks[idx]);
+        u.lang = 'en-IN'; u.rate = 0.93; u.pitch = 1; u.volume = 1;
+        var vv = synth.getVoices();
+        var pv = vv.find(function(v) { return v.name.includes('Google') && v.lang.startsWith('en'); })
+               || vv.find(function(v) { return v.lang.startsWith('en-IN'); })
+               || vv.find(function(v) { return v.lang.startsWith('en'); });
+        if (pv) u.voice = pv;
+        u.onend = function() { idx++; next(); };
+        u.onerror = function() { idx++; next(); };
+        synth.speak(u);
+    }
+    next();
+}
+
+function stopAll() {
+    if (rec && listening) { try { rec.stop(); } catch(e) {} }
+    synth.cancel();
+    waves(false); setOrb('idle');
+    setS('Click the orb or press Speak');
+    listening = false;
+}
+
+function toggleAuto(btn) {
+    autoSpeak = !autoSpeak;
+    btn.textContent = autoSpeak ? '🔊 Auto' : '🔕 Auto';
+    if (autoSpeak) btn.classList.add('active');
+    else btn.classList.remove('active');
+    setS(autoSpeak ? '🔊 Auto-speak is ON' : '🔕 Auto-speak is OFF');
+}
+
+function startListen() {
+    if (listening) return;
+    if (!rec) rec = setupRec();
+    if (!rec) return;
+    window._trans = null;
+    document.getElementById('transcript').textContent = '';
+    try { rec.start(); }
+    catch(e) { rec = setupRec(); if (rec) rec.start(); }
+}
+
+function setS(m) { document.getElementById('status').textContent = m; }
+function waves(on) {
+    for (var i = 1; i <= 7; i++) {
+        var b = document.getElementById('w' + i);
+        if (b) { if (on) b.classList.add('on'); else b.classList.remove('on'); }
+    }
+}
+function setOrb(s) {
+    var o = document.getElementById('orb');
+    o.className = 'orb' + (s === 'listening' ? ' listening' : s === 'speaking' ? ' speaking' : '');
+    o.textContent = s === 'listening' ? '🔴' : s === 'speaking' ? '🔊' : '🎙️';
+}
+
+if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = function() { synth.getVoices(); };
+synth.getVoices();
+window._trans = null;
+window._appTab = null;
+</script>
+</body>
+</html>
